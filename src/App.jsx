@@ -6,6 +6,7 @@ function App() {
   const [isStarted, setIsStarted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [questions, setQuestions] = useState([]);
+  const [score, setScore] = useState(0);
   let fetchQuestions = async () => {
     let response = await fetch("https://opentdb.com/api.php?amount=5");
     let data = await response.json();
@@ -67,14 +68,14 @@ function App() {
   }
 
   //When the user clicks the submit button, we need to update the state of isSubmitted to true, compare the selected answers to the correct answers, and calculate the score(number of correct answers) and display it to the user.
-  let score = 0;
   function submitAnswers() {
     setIsSubmitted(true);
 
+    let newScore = 0;
     let newQuestions = questions.map((question) => {
       let newAnswers = question.answers.map((answer) => {
         if (answer.isSelected && answer.correct) {
-          score++;
+          newScore++;
           return {
             ...answer,
             isSelected: true,
@@ -106,7 +107,7 @@ function App() {
       };
     });
     setQuestions(newQuestions);
-    console.log(`score`, score);
+    setScore(newScore);
   }
 
   console.log(`questions`, questions);
