@@ -1,23 +1,29 @@
 # Quizzical
 
-Quizzical is a quiz application built with React. It fetches questions from the Open Trivia DB and presents them to the user.
+Quizzical is a simple quiz application built with React. It fetches questions from the Open Trivia DB and presents them to the user. The user can select answers and submit them to see their score.
 
 ## Features
 
-- Start a new quiz with a single click
-- Multiple choice questions
-- Check your answers at the end of the quiz
+- Fetches questions from the Open Trivia DB
+- Displays questions along with multiple choice answers
+- Allows user to select an answer for each question
+- User can submit their answers to see their score
+- User can restart the quiz
 
 ## Installation
 
 1. Clone this repository: `git clone https://github.com/JacobYZ/quizzical-app.git`
-2. Navigate to the project directory: `cd quizzical`
-3. Install dependencies: `npm install`
+2. Navigate into the project directory: `cd quizzical`
+3. Install the dependencies: `npm install`
 4. Start the application: `npm start`
 
 ## Usage
 
-Click the "Start quiz" button to begin the quiz. Select an answer for each question, then click "Check answers" to see your results.
+After starting the application, click "Start quiz" to begin. Select an answer for each question, then click "Check answers" to submit your answers and see your score. Click "Play again" to restart the quiz.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
