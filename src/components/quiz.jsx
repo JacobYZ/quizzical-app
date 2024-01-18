@@ -9,15 +9,29 @@ export default function Quiz({
   isSubmitted,
   selectAnswer,
 }) {
+  
   return (
     <div>
       <h3>{he.decode(question)}</h3>
       {answers.map((answer) => {
+        let buttonClass = "answer";
+        if (isSubmitted) {
+          buttonClass += " submitted";
+          if (answer.isCorrect) {
+            buttonClass += " correct";
+          } else if (answer.isSelected) {
+            buttonClass += " incorrect";
+          }
+        } else if (answer.isSelected) {
+          buttonClass += " selected";
+        }
+
         return (
           <button
-            className={answer.isSelected ? "answer selected" : "answer"}
+            className={buttonClass}
             key={answer.answer}
             onClick={() => selectAnswer(question, answer.answer)}
+            disabled={isSubmitted}
           >
             {he.decode(answer.answer)}
           </button>

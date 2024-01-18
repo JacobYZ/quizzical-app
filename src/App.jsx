@@ -17,27 +17,27 @@ function App() {
   };
 
   //shuffle answers and make each answer as an object with a boolean value for correct or incorrect
-  useEffect(() => {
-    async function getQuestions() {
-      let questions = await fetchQuestions();
-      let newQuestions = questions.map((question) => {
-        let answers = [...question.incorrect_answers, question.correct_answer];
-        let shuffledAnswers = answers.sort(() => Math.random() - 0.5);
-        let newAnswers = shuffledAnswers.map((answer) => {
-          return {
-            answer: answer,
-            correct: answer === question.correct_answer,
-          };
-        });
+  async function getQuestions() {
+    let questions = await fetchQuestions();
+    let newQuestions = questions.map((question) => {
+      let answers = [...question.incorrect_answers, question.correct_answer];
+      let shuffledAnswers = answers.sort(() => Math.random() - 0.5);
+      let newAnswers = shuffledAnswers.map((answer) => {
         return {
-          ...question,
-          answers: newAnswers,
+          answer: answer,
+          correct: answer === question.correct_answer,
         };
       });
-      setQuestions(newQuestions);
-    }
-    getQuestions();
-  }, []);
+      return {
+        ...question,
+        answers: newAnswers,
+      };
+    });
+    setQuestions(newQuestions);
+  }
+  useEffect(() => {
+    if (isStarted) getQuestions();
+  }, [isStarted]);
 
   //If the user selects an answer, we need to update the state of the answer to isSelected: true
   function selectAnswer(questionText, answerText) {
@@ -111,52 +111,51 @@ function App() {
   }
 
   console.log(`questions`, questions);
-  let questionList = questions.map((question) => {
-    return (
-      <Quiz
-        key={question.question}
-        type={question.type}
-        difficulty={question.difficulty}
-        category={question.category}
-        question={question.question}
-        answers={question.answers}
-        isSubmitted={isSubmitted}
-        selectAnswer={selectAnswer}
-      />
-    );
-  });
+  const questionList = questions.map((question) => (
+    <Quiz
+      key={question.question}
+      type={question.type}
+      difficulty={question.difficulty}
+      category={question.category}
+      question={question.question}
+      answers={question.answers}
+      isSubmitted={isSubmitted}
+      selectAnswer={selectAnswer}
+    />
+  ));
+
+  const handleRestart = () => {
+    setIsStarted(false);
+    setIsSubmitted(false);
+  };
+
   return (
     <main>
       {isStarted ? (
         <>
           {questionList}
-          {isSubmitted ? (
-            <>
-              <p>You scored {score}/5 correct answers</p>
-              <button
-                className="submit"
-                onClick={() => {
-                  setIsStarted(false);
-                  setIsSubmitted(false);
-                }}
-              >
-                Restart quiz
-              </button>
-            </>
-          ) : (
+          <div className="submit-container">
+            {isSubmitted && (
+              <p className="score">You scored {score}/5 correct answers</p>
+            )}
             <button
               className="submit"
-              onClick={submitAnswers}
+              onClick={isSubmitted ? handleRestart : submitAnswers}
             >
-              Check answers
+              {isSubmitted ? "Play again" : "Check answers"}
             </button>
-          )}
+          </div>
         </>
       ) : (
-        <>
+        <div className="start-container">
           <h1>Quizzical</h1>
-          <button onClick={() => setIsStarted(true)}>Start quiz</button>
-        </>
+          <button
+            className="start"
+            onClick={() => setIsStarted(true)}
+          >
+            Start quiz
+          </button>
+        </div>
       )}
       <footer
         style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.8rem" }}
