@@ -67,10 +67,10 @@ function App() {
   }
 
   //When the user clicks the submit button, we need to update the state of isSubmitted to true, compare the selected answers to the correct answers, and calculate the score(number of correct answers) and display it to the user.
-
+  let score = 0;
   function submitAnswers() {
     setIsSubmitted(true);
-    let score = 0;
+
     let newQuestions = questions.map((question) => {
       let newAnswers = question.answers.map((answer) => {
         if (answer.isSelected && answer.correct) {
@@ -106,7 +106,7 @@ function App() {
       };
     });
     setQuestions(newQuestions);
-    alert(`Your score is ${score}`);
+    console.log(`score`, score);
   }
 
   console.log(`questions`, questions);
@@ -129,12 +129,27 @@ function App() {
       {isStarted ? (
         <>
           {questionList}
-          <button
-            className="submit"
-            onClick={submitAnswers}
-          >
-            Check answers
-          </button>
+          {isSubmitted ? (
+            <>
+              <p>You scored {score}/5 correct answers</p>
+              <button
+                className="submit"
+                onClick={() => {
+                  setIsStarted(false);
+                  setIsSubmitted(false);
+                }}
+              >
+                Restart quiz
+              </button>
+            </>
+          ) : (
+            <button
+              className="submit"
+              onClick={submitAnswers}
+            >
+              Check answers
+            </button>
+          )}
         </>
       ) : (
         <>
