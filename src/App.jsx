@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 import Quiz from "./components/quiz";
 
 function App() {
@@ -141,14 +142,25 @@ function App() {
           <button onClick={() => setIsStarted(true)}>Start quiz</button>
         </>
       )}
-      <footer>
+      <footer
+        style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.8rem" }}
+      >
         <p>
-          Questions provided by <a href="API_PROVIDER_URL">API Provider</a>.
-          Content is licensed under a{" "}
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/">
-            Creative Commons Attribution-ShareAlike 4.0 International License
+          Questions by{" "}
+          <a
+            href="https://opentdb.com/"
+            style={{ color: "inherit" }}
+          >
+            Open Trivia DB
+          </a>{" "}
+          under{" "}
+          <a
+            href="https://creativecommons.org/licenses/by-sa/4.0/"
+            style={{ color: "inherit" }}
+          >
+            CC BY-SA 4.0
           </a>
-          . No changes were made to the data.
+          . No changes made.
         </p>
       </footer>
     </main>
