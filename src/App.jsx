@@ -1,29 +1,76 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import Quiz from "./components/quiz";
+import StartScreen from "./components/StartScreen";
 
 function App() {
-  const [isStarted, setIsStarted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const initialState = {
+    isStarted: false,
+    isLoading: false,
+    isError: false,
+    isSubmitted: false,
+    category: 0,
+    difficulty: "",
+    type: "",
+    errorMessage: "",
+  };
+  const [appState, setAppState] = useState(initialState);
   const [questions, setQuestions] = useState([]);
   const [score, setScore] = useState(0);
   let fetchQuestions = async () => {
-    let response = await fetch("https://opentdb.com/api.php?amount=5");
+    setAppState((prevState) => ({ ...prevState, isLoading: true }));
+    let response = await fetch(
+      `https://opentdb.com/api.php?amount=5&category=${appState.category}&difficulty=${appState.difficulty}&type=${appState.type}`
+    );
     let data = await response.json();
     if (data.response_code === 0) {
       console.log("Success fetching questions");
-      setIsLoading(true);
+      setAppState((prevState) => ({
+        ...prevState,
+        isLoading: false,
+        isError: false,
+        category: 0,
+        difficulty: "",
+        type: "",
+        errorMessage: "",
+      }));
       return data.results;
     } else {
-      console.log(`Error fetching questions`);
-      setIsError(true);
+      let message;
+      switch (data.response_code) {
+        case 1:
+          message =
+            "Could not return results. The API doesn't have enough questions for your query.";
+          break;
+        case 2:
+          message =
+            "Contains an invalid parameter. Arguments passed in aren't valid.";
+          break;
+        case 3:
+          message = "Session Token does not exist.";
+          break;
+        case 4:
+          message =
+            "Session Token has returned all possible questions for the specified query. Resetting the Token is necessary.";
+          break;
+        case 5:
+          message =
+            "Too many requests have occurred. Each IP can only access the API once every 5 seconds.";
+          break;
+        default:
+          message = "An unknown error occurred.";
+      }
+      setAppState((prevState) => ({
+        ...prevState,
+        isLoading: false,
+        isError: true,
+        errorMessage: message,
+      }));
     }
   };
 
   //shuffle answers and make each answer as an object with a boolean value for correct or incorrect
   async function getQuestions() {
-    setIsLoading(true);
+    setAppState((prevState) => ({ ...prevState, isLoading: true }));
     let questions = await fetchQuestions();
     let newQuestions = questions.map((question) => {
       let answers = [...question.incorrect_answers, question.correct_answer];
@@ -40,22 +87,28 @@ function App() {
       };
     });
     setQuestions(newQuestions);
-    setIsLoading(false);
+    setAppState((prevState) => ({ ...prevState, isLoading: false }));
   }
-  function handleStartButton() {
-    if (!isStarted && !isLoading && !isError) {
-      setIsStarted(true);
+  function handleSelectChange(event) {
+    const { name, value } = event.target;
+    setAppState((prevState) => ({ ...prevState, [name]: value }));
+    console.log(`${name}: ${value}`);
+  }
+  function handleStartButton(event) {
+    event.preventDefault();
+    if (!appState.isStarted && !appState.isLoading && !appState.isError) {
+      setAppState((prevState) => ({ ...prevState, isStarted: true }));
       getQuestions();
       console.log("case 1");
-    } else if (isStarted && isError) {
-      setIsError(false);
+    } else if (appState.isStarted && appState.isError) {
+      setAppState((prevState) => ({ ...prevState, isError: false }));
       getQuestions();
       console.log("case 2");
-    } else {
-      console.log("default");
+    } else if (appState.isStarted && !appState.isLoading && !appState.isError) {
+      setAppState((prevState) => ({ ...prevState, isStarted: false }));
+      console.log("case 3");
     }
   }
-  console.log(`isStarted`, isStarted);
 
   //If the user selects an answer, we need to update the state of the answer to isSelected: true
   function selectAnswer(questionText, answerText) {
@@ -87,8 +140,7 @@ function App() {
 
   //When the user clicks the submit button, we need to update the state of isSubmitted to true, compare the selected answers to the correct answers, and calculate the score(number of correct answers) and display it to the user.
   function submitAnswers() {
-    setIsSubmitted(true);
-
+    setAppState((prevState) => ({ ...prevState, isSubmitted: true }));
     let newScore = 0;
     let newQuestions = questions.map((question) => {
       let newAnswers = question.answers.map((answer) => {
@@ -135,49 +187,38 @@ function App() {
       category={question.category}
       question={question.question}
       answers={question.answers}
-      isSubmitted={isSubmitted}
+      isSubmitted={appState.isSubmitted}
       selectAnswer={selectAnswer}
     />
   ));
 
   const handleRestart = () => {
-    setIsStarted(false);
-    setIsSubmitted(false);
+    setAppState({ ...appState, isStarted: false, isSubmitted: false });
   };
 
   return (
     <main>
-      {isStarted && !isLoading ? (
+      {appState.isStarted && !appState.isLoading && !appState.isError ? (
         <>
           {questionList}
           <div className="submit-container">
-            {isSubmitted && (
+            {appState.isSubmitted && (
               <p className="score">You scored {score}/5 correct answers</p>
             )}
             <button
               className="submit"
-              onClick={isSubmitted ? handleRestart : submitAnswers}
+              onClick={appState.isSubmitted ? handleRestart : submitAnswers}
             >
-              {isSubmitted ? "Play again" : "Check answers"}
+              {appState.isSubmitted ? "Play again" : "Check answers"}
             </button>
           </div>
         </>
       ) : (
-        <div className="start-container">
-          <h1>Quizzical</h1>
-          <button
-            className="start"
-            onClick={() => handleStartButton()}
-          >
-            Start quiz
-          </button>
-          {isLoading && !isError && <p>Loading...</p>}
-          {isError && (
-            <p>
-              Error fetching questions. Please click the button to try again.
-            </p>
-          )}
-        </div>
+        <StartScreen
+          handleStartButton={handleStartButton}
+          appState={appState}
+          handleSelectChange={handleSelectChange}
+        />
       )}
       <footer>
         <p>
