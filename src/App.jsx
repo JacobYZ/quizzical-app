@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { AiOutlineInfoCircle } from "react-icons/ai";
+import { useState } from "react";
 import Quiz from "./components/quiz";
 
 function App() {
   const [isStarted, setIsStarted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [score, setScore] = useState(0);
@@ -12,12 +13,17 @@ function App() {
     let data = await response.json();
     if (data.response_code === 0) {
       console.log("Success fetching questions");
+      setIsLoading(true);
       return data.results;
-    } else console.log(`Error fetching questions`);
+    } else {
+      console.log(`Error fetching questions`);
+      setIsError(true);
+    }
   };
 
   //shuffle answers and make each answer as an object with a boolean value for correct or incorrect
   async function getQuestions() {
+    setIsLoading(true);
     let questions = await fetchQuestions();
     let newQuestions = questions.map((question) => {
       let answers = [...question.incorrect_answers, question.correct_answer];
@@ -34,10 +40,22 @@ function App() {
       };
     });
     setQuestions(newQuestions);
+    setIsLoading(false);
   }
-  useEffect(() => {
-    if (isStarted) getQuestions();
-  }, [isStarted]);
+  function handleStartButton() {
+    if (!isStarted && !isLoading && !isError) {
+      setIsStarted(true);
+      getQuestions();
+      console.log("case 1");
+    } else if (isStarted && isError) {
+      setIsError(false);
+      getQuestions();
+      console.log("case 2");
+    } else {
+      console.log("default");
+    }
+  }
+  console.log(`isStarted`, isStarted);
 
   //If the user selects an answer, we need to update the state of the answer to isSelected: true
   function selectAnswer(questionText, answerText) {
@@ -109,8 +127,6 @@ function App() {
     setQuestions(newQuestions);
     setScore(newScore);
   }
-
-  console.log(`questions`, questions);
   const questionList = questions.map((question) => (
     <Quiz
       key={question.question}
@@ -131,7 +147,7 @@ function App() {
 
   return (
     <main>
-      {isStarted ? (
+      {isStarted && !isLoading ? (
         <>
           {questionList}
           <div className="submit-container">
@@ -151,15 +167,19 @@ function App() {
           <h1>Quizzical</h1>
           <button
             className="start"
-            onClick={() => setIsStarted(true)}
+            onClick={() => handleStartButton()}
           >
             Start quiz
           </button>
+          {isLoading && !isError && <p>Loading...</p>}
+          {isError && (
+            <p>
+              Error fetching questions. Please click the button to try again.
+            </p>
+          )}
         </div>
       )}
-      <footer
-        style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.8rem" }}
-      >
+      <footer>
         <p>
           Questions by{" "}
           <a
