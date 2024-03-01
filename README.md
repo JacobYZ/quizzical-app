@@ -2,6 +2,10 @@
 
 Quizzical is a simple quiz application built with React. It fetches questions from the Open Trivia DB and presents them to the user. The user can select answers and submit them to see their score.
 
+## Demo
+
+You can try out the game at [https://quizzical.auroraweb.com.au/](https://quizzical.auroraweb.com.au/)
+
 ## Features
 
 - Fetches questions from the Open Trivia DB
